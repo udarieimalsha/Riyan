@@ -76,16 +76,6 @@ def show_about_dialog():
                     </Button.Template>
                 </Button>
 
-                <Button x:Name="RepoBtn" Content="Visit GitHub Repository" Margin="0,0,0,10" Cursor="Hand">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="Transparent" BorderBrush="#7B2C2C" BorderThickness="1" CornerRadius="5" Padding="10">
-                                <TextBlock Text="{TemplateBinding Content}" Foreground="#7B2C2C" HorizontalAlignment="Center"/>
-                            </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-
                 <Button x:Name="CloseBtn" Content="Close" Background="#7B2C2C" Foreground="White" FontWeight="Bold"
                         Padding="15,8" HorizontalAlignment="Center" Margin="0,20,0,0" Cursor="Hand">
                     <Button.Template>
@@ -114,12 +104,6 @@ def show_about_dialog():
     def on_close(sender, args):
         window.Close()
     close_btn.Click += on_close
-
-    repo_btn = window.FindName("RepoBtn")
-    def on_repo(sender, args):
-        import webbrowser
-        webbrowser.open("https://github.com/udarieimalsha/Riyan.extension")
-    repo_btn.Click += on_repo
 
     update_btn = window.FindName("UpdateBtn")
     def on_update(sender, args):
