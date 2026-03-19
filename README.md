@@ -9,7 +9,7 @@ To install this extension, you must clone it into your pyRevit Extensions folder
 ### Standard Installation
 Run the following command in your terminal:
 ```powershell
-git clone https://github.com/udarieimalsha/Riyan Riyan.extension
+git clone https://github.com/udarieimalsha/Riyan.extension.git
 ```
 
 ### Manual Installation
