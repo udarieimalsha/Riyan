@@ -77,7 +77,7 @@ def show_updater_window(version, url):
         msg_txt = window.FindName("MsgTxt")
         
         # Action delegate wrapper for IronPython 2.7
-        import System.Action as Action
+        from System import Action
         
         def close_win(s, e): window.Close()
         btn_cancel.Click += close_win
@@ -114,8 +114,6 @@ def show_updater_window(version, url):
                     
             client.DownloadProgressChanged += Net.DownloadProgressChangedEventHandler(on_progress)
             client.DownloadFileCompleted += Net.ComponentModel.AsyncCompletedEventHandler(on_complete)
-            
-            client.DownloadFileAsync(Uri(url), temp_path)
             
         btn_update.Click += start_update
         window.ShowDialog()
