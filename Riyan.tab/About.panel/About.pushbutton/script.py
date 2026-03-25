@@ -88,11 +88,11 @@ def show_about_dialog():
                 <TextBlock Text="Professional Revit automation tools for link management and coordination." 
                            Foreground="#A0A0A0" TextWrapping="Wrap" Margin="0,0,0,25" TextAlignment="Center" FontStyle="Italic"/>
 
-                <Button x:Name="UpdateBtn" Content="Check for Updates" Margin="0,0,0,10" Cursor="Hand" Background="#01000000">
+                <Button x:Name="UpdateBtn" Content="Check for Updates" Margin="0,0,0,10" Cursor="Hand" Background="#1A1A1A" BorderBrush="#7B2C2C" BorderThickness="1" Foreground="White" Padding="10">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" BorderBrush="#7B2C2C" BorderThickness="1" CornerRadius="5" Padding="10">
-                                <TextBlock Text="{TemplateBinding Content}" Foreground="White" HorizontalAlignment="Center"/>
+                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </ControlTemplate>
                     </Button.Template>
@@ -153,40 +153,54 @@ def show_about_dialog():
         msg_win.ShowDialog()
 
     update_btn = window.FindName("UpdateBtn")
+    from System import Action
+    import threading
+
     def on_update(sender, args):
-        try:
-            update_btn.IsEnabled = False
-            from System.Net import WebClient
-            client = WebClient()
-            client.Headers.Add("Cache-Control", "no-cache")
+        update_btn.IsEnabled = False
+        update_btn.Content = "Checking..."
+        
+        def check_thread():
             try:
-                from System.Net import ServicePointManager, SecurityProtocolType
-                ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12
-            except:
-                pass
-            
-            url = "https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json"
-            json_str = client.DownloadString(url)
-            import json
-            data = json.loads(json_str)
-            remote_v = data.get("version", "")
-            dl_url = data.get("download_url", "")
-            local_v = VERSION
-            
-            def v_to_tuple(v): return tuple(map(int, v.split('.')))
-            if v_to_tuple(remote_v) > v_to_tuple(local_v):
-                res = forms.alert("A new version (%s) is available!\n\nWould you like to download it?" % remote_v, 
-                                  title="Update Available", yes=True, no=True)
-                if res:
-                    import webbrowser
-                    webbrowser.open(dl_url)
-                    window.Close()
-            else:
-                show_branded_message("Riyan Tool", "You are up to date!\n(v%s)" % local_v)
-        except Exception as e:
-            show_branded_message("Update Error", str(e))
-        finally:
-            update_btn.IsEnabled = True
+                from System.Net import WebClient
+                client = WebClient()
+                client.Headers.Add("Cache-Control", "no-cache")
+                try:
+                    from System.Net import ServicePointManager, SecurityProtocolType
+                    ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12
+                except: pass
+                
+                url = "https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json"
+                json_str = client.DownloadString(url)
+                import json
+                data = json.loads(json_str)
+                remote_v = data.get("version", "")
+                dl_url = data.get("download_url", "")
+                
+                def show_res():
+                    update_btn.Content = "Check for Updates"
+                    update_btn.IsEnabled = True
+                    def v_to_tuple(v): return tuple(map(int, v.split('.')))
+                    if v_to_tuple(remote_v) > v_to_tuple(VERSION):
+                        res = forms.alert("A new version (%s) is available!\n\nWould you like to download it?" % remote_v, 
+                                          title="Update Available", yes=True, no=True)
+                        if res:
+                            import webbrowser
+                            webbrowser.open(dl_url)
+                            window.Close()
+                    else:
+                        show_branded_message("Riyan Tool", "You are up to date!\n(v%s)" % VERSION)
+                
+                window.Dispatcher.Invoke(Action(show_res))
+                
+            except Exception as e:
+                def show_err():
+                    update_btn.Content = "Check for Updates"
+                    update_btn.IsEnabled = True
+                    show_branded_message("Update Error", str(e))
+                window.Dispatcher.Invoke(Action(show_err))
+
+        threading.Thread(target=check_thread).start()
 
     update_btn.Click += on_update
 
