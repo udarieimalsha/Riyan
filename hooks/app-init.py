@@ -141,6 +141,12 @@ def run_exe_update_checker(extension_dir):
         dl_url = data.get("download_url", "")
         if not remote_v or not dl_url: return
         
+        # FINAL DEBUG: Show comparison for this test (Uncomment if needed)
+        # import clr
+        # clr.AddReference('System.Windows.Forms')
+        # import System.Windows.Forms as Forms
+        # Forms.MessageBox.Show("Local: " + local_v + " | Remote: " + remote_v)
+        
         def v_to_tuple(v): return tuple(map(int, v.split('.')))
         
         if v_to_tuple(remote_v) > v_to_tuple(local_v):
@@ -159,17 +165,13 @@ def main():
     curr_dir = os.path.dirname(__file__)
     extension_dir = os.path.dirname(curr_dir)
     
-    # DEBUG: Show that the script actually started
-    Forms.MessageBox.Show("Riyan Hook Starting...") # Uncomment for deep debug
-    
     git_dir = os.path.join(extension_dir, '.git')
     
     # If it's NOT a git repo, it MUST be an EXE install or manual copy
-    # We want to show the GUI for these users.
     if not os.path.exists(git_dir):
         run_exe_update_checker(extension_dir)
     else:
-        # For developers/collaborators, just do a silent pull in background
+        # For developers, just do a silent pull in background
         import threading
         t = threading.Thread(target=run_git_pull_update, args=(extension_dir,))
         t.start()
