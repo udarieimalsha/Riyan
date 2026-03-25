@@ -207,6 +207,42 @@ def show_about_dialog():
             json_str = client.DownloadString(url)
             data = json.loads(json_str)
             
+            # Detect if this is a Git-based installation
+            curr = os.path.dirname(__file__)
+            ext_dir = None
+            for _ in range(5):
+                if os.path.exists(os.path.join(curr, "version.txt")):
+                    ext_dir = curr
+                    break
+                curr = os.path.dirname(curr)
+            
+            is_git = False
+            if ext_dir and os.path.exists(os.path.join(ext_dir, ".git")):
+                is_git = True
+
+            if is_git:
+                update_btn.Content = "Pulling Git..."
+                try:
+                    # Sync UI
+                    window.Dispatcher.Invoke(DispatcherPriority.Background, Action(lambda: None))
+                    
+                    startupinfo = subprocess.STARTUPINFO()
+                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                    env = os.environ.copy()
+                    subprocess.call(["git", "stash"], cwd=ext_dir, startupinfo=startupinfo, env=env)
+                    res = subprocess.call(["git", "pull"], cwd=ext_dir, startupinfo=startupinfo, env=env)
+                    subprocess.call(["git", "stash", "pop"], cwd=ext_dir, startupinfo=startupinfo, env=env)
+                    
+                    if res == 0:
+                        status_text.Text = "Successfully updated via Git! Please restart Revit."
+                    else:
+                        status_text.Text = "Git update failed. Please check for conflicts manually."
+                    status_border.Visibility = System.Windows.Visibility.Visible
+                except Exception as ex:
+                    status_text.Text = "Git Error: " + str(ex)
+                    status_border.Visibility = System.Windows.Visibility.Visible
+                return
+
             remote_v = data.get("version", "")
             dl_url = data.get("download_url", "")
             
