@@ -154,53 +154,48 @@ def show_about_dialog():
 
     update_btn = window.FindName("UpdateBtn")
     from System import Action
-    import threading
+    from System.Windows.Threading import DispatcherPriority
 
     def on_update(sender, args):
-        update_btn.IsEnabled = False
-        update_btn.Content = "Checking..."
-        
-        def check_thread():
-            try:
-                from System.Net import WebClient
-                client = WebClient()
-                client.Headers.Add("Cache-Control", "no-cache")
-                try:
-                    from System.Net import ServicePointManager, SecurityProtocolType
-                    ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12
-                except: pass
-                
-                url = "https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json"
-                json_str = client.DownloadString(url)
-                import json
-                data = json.loads(json_str)
-                remote_v = data.get("version", "")
-                dl_url = data.get("download_url", "")
-                
-                def show_res():
-                    update_btn.Content = "Check for Updates"
-                    update_btn.IsEnabled = True
-                    def v_to_tuple(v): return tuple(map(int, v.split('.')))
-                    if v_to_tuple(remote_v) > v_to_tuple(VERSION):
-                        res = forms.alert("A new version (%s) is available!\n\nWould you like to download it?" % remote_v, 
-                                          title="Update Available", yes=True, no=True)
-                        if res:
-                            import webbrowser
-                            webbrowser.open(dl_url)
-                            window.Close()
-                    else:
-                        show_branded_message("Riyan Tool", "You are up to date!\n(v%s)" % VERSION)
-                
-                window.Dispatcher.Invoke(Action(show_res))
-                
-            except Exception as e:
-                def show_err():
-                    update_btn.Content = "Check for Updates"
-                    update_btn.IsEnabled = True
-                    show_branded_message("Update Error", str(e))
-                window.Dispatcher.Invoke(Action(show_err))
+        try:
+            update_btn.IsEnabled = False
+            update_btn.Content = "Checking..."
+            # Force UI to show "Checking..."
+            window.Dispatcher.Invoke(DispatcherPriority.Background, Action(lambda: None))
 
-        threading.Thread(target=check_thread).start()
+            from System.Net import WebClient
+            client = WebClient()
+            client.Headers.Add("Cache-Control", "no-cache")
+            try:
+                from System.Net import ServicePointManager, SecurityProtocolType
+                ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12
+            except: pass
+            
+            url = "https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json"
+            json_str = client.DownloadString(url)
+            import json
+            data = json.loads(json_str)
+            remote_v = data.get("version", "")
+            dl_url = data.get("download_url", "")
+            
+            def v_to_tuple(v): return tuple(map(int, v.split('.')))
+            if v_to_tuple(remote_v) > v_to_tuple(VERSION):
+                update_btn.Content = "Check for Updates"
+                update_btn.IsEnabled = True
+                res = forms.alert("A new version (%s) is available!\n\nWould you like to download it?" % remote_v, 
+                                  title="Update Available", yes=True, no=True)
+                if res:
+                    import webbrowser
+                    webbrowser.open(dl_url)
+                    window.Close()
+            else:
+                show_branded_message("Riyan Tool", "You are up to date!\n(v%s)" % VERSION)
+                
+        except Exception as e:
+            show_branded_message("Update Error", str(e))
+        finally:
+            update_btn.Content = "Check for Updates"
+            update_btn.IsEnabled = True
 
     update_btn.Click += on_update
 
