@@ -158,6 +158,7 @@ def show_about_dialog():
     update_btn = window.FindName("UpdateBtn")
     def on_update(sender, args):
         try:
+            update_btn.IsEnabled = False
             from System.Net import WebClient
             client = WebClient()
             client.Headers.Add("Cache-Control", "no-cache")
@@ -192,8 +193,9 @@ def show_about_dialog():
             show_branded_message("Update Error", str(e))
         finally:
             update_btn.IsEnabled = True
-            
+
     update_btn.Click += on_update
+
 
     window.ShowDialog()
 
