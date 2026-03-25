@@ -152,20 +152,26 @@ def run_exe_update_checker(extension_dir):
         Forms.MessageBox.Show("Network/Update Error: " + str(e))
 
 def main():
+    import clr
+    clr.AddReference('System.Windows.Forms')
+    import System.Windows.Forms as Forms
+    
     curr_dir = os.path.dirname(__file__)
     extension_dir = os.path.dirname(curr_dir)
-    exe_flag = os.path.join(extension_dir, 'is_exe.flag')
     
-    if os.path.exists(exe_flag):
-        # Synchronous check so PyRevit doesn't kill the thread scope while UI is open
+    # DEBUG: Show that the script actually started
+    Forms.MessageBox.Show("Riyan Hook Starting...") # Uncomment for deep debug
+    
+    git_dir = os.path.join(extension_dir, '.git')
+    
+    # If it's NOT a git repo, it MUST be an EXE install or manual copy
+    # We want to show the GUI for these users.
+    if not os.path.exists(git_dir):
         run_exe_update_checker(extension_dir)
     else:
-        # Background pull
+        # For developers/collaborators, just do a silent pull in background
         import threading
         t = threading.Thread(target=run_git_pull_update, args=(extension_dir,))
         t.start()
 
-try:
-    main()
-except:
-    pass
+main()
