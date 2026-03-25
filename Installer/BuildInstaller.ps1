@@ -2,7 +2,7 @@
 # This script will download Inno Setup if missing and compile the installer.
 
 $issPath = ".\RiyanSetup.iss"
-$outputExe = "..\RiyanSetup_v1.0.8.exe"
+$outputExe = "..\RiyanSetup_v1.0.9.exe"
 
 Write-Host "--- Riyan Revit Tools Installer Builder ---" -ForegroundColor Cyan
 
