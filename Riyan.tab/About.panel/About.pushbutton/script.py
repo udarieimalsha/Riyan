@@ -56,7 +56,7 @@ def show_about_dialog():
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="About Riyan Plugin"
-        Width="450" Height="480"
+        Width="450" Height="550"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         FontFamily="Segoe UI"
@@ -70,37 +70,37 @@ def show_about_dialog():
             </Grid.RowDefinitions>
 
             <!-- Header bar -->
-            <Border Grid.Row="0" Background="#111111" BorderBrush="#7B2C2C" BorderThickness="0,0,0,2" Padding="20,10">
+            <Border Grid.Row="0" Background="#111111" BorderBrush="#7B2C2C" BorderThickness="0,0,0,2" Padding="20,15">
                 <StackPanel HorizontalAlignment="Center">
-                    <Image x:Name="BigLogo" Height="80" Width="180" 
-                           Margin="0,0,0,5"
+                    <Image x:Name="BigLogo" Height="90" Width="200" 
+                           Margin="0,0,0,10"
                            RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Text="Riyan Revit Plugin Suite"
-                               FontSize="20" FontWeight="Bold"
+                               FontSize="22" FontWeight="Bold"
                                Foreground="White" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Border>
 
             <!-- Content Area -->
-            <StackPanel Grid.Row="1" Margin="30,20,30,20" VerticalAlignment="Top">
+            <StackPanel Grid.Row="1" Margin="35,25,35,25" VerticalAlignment="Top">
                 <Border BorderBrush="#222222" BorderThickness="0,0,0,1" Margin="0,0,0,15" Padding="0,0,0,10">
                     <Grid>
-                        <TextBlock Text="Version" Foreground="#888888" HorizontalAlignment="Left"/>
-                        <TextBlock Text="v{version}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right"/>
+                        <TextBlock Text="Version" Foreground="#888888" HorizontalAlignment="Left" FontSize="14"/>
+                        <TextBlock Text="v{version}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right" FontSize="14"/>
                     </Grid>
                 </Border>
 
                 <Border BorderBrush="#222222" BorderThickness="0,0,0,1" Margin="0,0,0,15" Padding="0,0,0,10">
                     <Grid>
-                        <TextBlock Text="Developer" Foreground="#888888" HorizontalAlignment="Left"/>
-                        <TextBlock Text="Udarie &amp; Chalana" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right"/>
+                        <TextBlock Text="Developer" Foreground="#888888" HorizontalAlignment="Left" FontSize="14"/>
+                        <TextBlock Text="Udarie &amp; Chalana" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right" FontSize="14"/>
                     </Grid>
                 </Border>
 
                 <TextBlock Text="Professional Revit automation tools for link management and coordination." 
-                           Foreground="#A0A0A0" TextWrapping="Wrap" Margin="0,0,0,25" TextAlignment="Center" FontStyle="Italic"/>
+                           Foreground="#A0A0A0" TextWrapping="Wrap" Margin="0,10,0,30" TextAlignment="Center" FontStyle="Italic" FontSize="13"/>
 
-                <Button x:Name="UpdateBtn" Content="Check for Updates" Margin="0,0,0,10" Cursor="Hand" Background="#1A1A1A" BorderBrush="#7B2C2C" BorderThickness="1" Foreground="White" Padding="10">
+                <Button x:Name="UpdateBtn" Content="Check for Updates" Margin="0,0,0,15" Cursor="Hand" Background="#1A1A1A" BorderBrush="#7B2C2C" BorderThickness="1" Foreground="White" Padding="12">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5" Padding="{TemplateBinding Padding}">
@@ -111,15 +111,15 @@ def show_about_dialog():
                 </Button>
                 
                 <!-- Update Status Area -->
-                <Border x:Name="StatusBorder" Background="#227B2C2C" BorderBrush="#7B2C2C" BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,5,0,0" Visibility="Collapsed">
-                    <TextBlock x:Name="StatusText" Foreground="White" TextAlignment="Center" TextWrapping="Wrap" FontSize="13"/>
+                <Border x:Name="StatusBorder" Background="#337B2C2C" BorderBrush="#7B2C2C" BorderThickness="1" CornerRadius="5" Padding="12" Margin="0,0,0,10" Visibility="Collapsed">
+                    <TextBlock x:Name="StatusText" Foreground="White" TextAlignment="Center" TextWrapping="Wrap" FontSize="14" FontWeight="SemiBold"/>
                 </Border>
 
                 <Button x:Name="CloseBtn" Content="Close" Background="#7B2C2C" Foreground="White" FontWeight="Bold"
-                        Padding="15,8" HorizontalAlignment="Center" Margin="0,20,0,0" Cursor="Hand">
+                        Padding="25,10" HorizontalAlignment="Center" Margin="0,30,0,0" Cursor="Hand">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="20" Padding="{TemplateBinding Padding}">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="25" Padding="{TemplateBinding Padding}">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </ControlTemplate>
