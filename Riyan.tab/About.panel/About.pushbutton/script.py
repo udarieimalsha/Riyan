@@ -6,6 +6,18 @@ from pyrevit import forms
 from System.Windows.Markup import XamlReader
 from System.Windows.Media.Imaging import BitmapImage
 from System import Uri, UriKind
+import clr
+clr.AddReference("System")
+import System.Net as Net
+import json
+import webbrowser
+
+# Custom WebClient with Timeout
+class WebClientWithTimeout(Net.WebClient):
+    def GetWebRequest(self, address):
+        wr = Net.WebClient.GetWebRequest(self, address)
+        wr.Timeout = 5000 # 5 seconds
+        return wr
 
 def get_version():
     try:
@@ -159,31 +171,31 @@ def show_about_dialog():
             update_btn.IsEnabled = False
             update_btn.Content = "Checking..."
             
-            import clr
-            clr.AddReference("System")
-            import System.Net as Net
-            
+            # Force UI update (Synchronous status change)
+            from System.Windows.Threading import DispatcherPriority
+            from System import Action
+            window.Dispatcher.Invoke(DispatcherPriority.Background, Action(lambda: None))
+
             try:
                 Net.ServicePointManager.SecurityProtocol |= Net.SecurityProtocolType.Tls12
             except: pass
             
-            client = Net.WebClient()
+            client = WebClientWithTimeout()
             client.Headers.Add("Cache-Control", "no-cache")
             
             url = "https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json"
             json_str = client.DownloadString(url)
-            
-            import json
             data = json.loads(json_str)
+            
             remote_v = data.get("version", "")
             dl_url = data.get("download_url", "")
             
-            def v_to_tuple(v): return tuple(map(int, v.split('.')))
+            def v_to_tuple(v): return tuple(map(int, str(v).split('.')))
+            
             if v_to_tuple(remote_v) > v_to_tuple(VERSION):
                 res = forms.alert("A new version (%s) is available!\n\nWould you like to download it?" % remote_v, 
                                   title="Update Available", yes=True, no=True)
                 if res:
-                    import webbrowser
                     webbrowser.open(dl_url)
                     window.Close()
             else:
