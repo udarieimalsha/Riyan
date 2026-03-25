@@ -427,7 +427,8 @@ def run():
                 if res["mode"] == "Survey Point":
                     # Use shared coordinate system
                     pos = proj_loc.GetProjectPosition(xyz)
-                    fx, fy, fz = pos.EastWest, pos.NorthSouth, pos.Elevation
+                    factor = 304.8 if "Millimeters" in res["unit"] else 0.3048
+                    fx, fy, fz = pos.EastWest * factor, pos.NorthSouth * factor, pos.Elevation * factor
                 else:
                     # Use internal project base point
                     pbp = DB.BasePoint.GetProjectBasePoint(doc)
