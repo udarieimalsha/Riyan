@@ -7,15 +7,37 @@ from System.Windows.Markup import XamlReader
 from System.Windows.Media.Imaging import BitmapImage
 from System import Uri, UriKind
 
-VERSION = "1.0.1"
+def get_version():
+    try:
+        # Search for version.txt in parent directories
+        curr = os.path.dirname(__file__)
+        for _ in range(5): # Check up to 5 levels up
+            v_file = os.path.join(curr, "version.txt")
+            if os.path.exists(v_file):
+                with open(v_file, "r") as f:
+                    return f.read().strip()
+            curr = os.path.dirname(curr)
+    except:
+        pass
+    return "1.0.3"
+
+VERSION = get_version()
 
 def show_about_dialog():
     plugin_dir = os.path.dirname(__file__)
-    # Corrected logo path: Coordination.panel/Copy from Link.pushbutton/logo.png
-    logo_path = os.path.join(os.path.dirname(os.path.dirname(plugin_dir)), 
-                             "Coordination.panel", 
-                             "Copy from Link.pushbutton", 
-                             "logo.png")
+    # Robust logo path
+    curr = os.path.dirname(__file__)
+    ext_dir = None
+    for _ in range(5):
+        if os.path.exists(os.path.join(curr, "version.txt")):
+            ext_dir = curr
+            break
+        curr = os.path.dirname(curr)
+    
+    if ext_dir:
+        logo_path = os.path.join(ext_dir, "Riyan.tab", "Coordination.panel", "Copy from Link.pushbutton", "logo.png")
+    else:
+        logo_path = os.path.join(plugin_dir, "icon.png")
 
     xaml_str = """
     <Window
@@ -70,7 +92,7 @@ def show_about_dialog():
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border Background="Transparent" BorderBrush="#7B2C2C" BorderThickness="1" CornerRadius="5" Padding="10">
-                                <TextBlock Text="{TemplateBinding Content}" Foreground="#7B2C2C" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{TemplateBinding Content}" Foreground="White" HorizontalAlignment="Center"/>
                             </Border>
                         </ControlTemplate>
                     </Button.Template>
@@ -108,24 +130,44 @@ def show_about_dialog():
     update_btn = window.FindName("UpdateBtn")
     def on_update(sender, args):
         try:
-            # Run git pull in the plugin directory
-            process = subprocess.Popen(['git', 'pull', 'origin', 'main'], 
-                                     cwd=plugin_dir,
-                                     stdout=subprocess.PIPE, 
-                                     stderr=subprocess.PIPE,
-                                     shell=True)
-            stdout, stderr = process.communicate()
+            import json
+            import System.Net as Net
             
-            if process.returncode == 0:
-                if "Already up to date" in stdout:
-                    forms.alert("Your plugin is already up to date!", title="Update Check")
-                else:
-                    forms.alert("Successfully updated to the latest version!\n\nPlease Reload pyRevit to apply changes.", 
-                                title="Update Success")
+            # Show "Checking..." status
+            update_btn.IsEnabled = False
+            
+            client = Net.WebClient()
+            client.Headers.Add("Cache-Control", "no-cache")
+            Net.ServicePointManager.SecurityProtocol |= Net.SecurityProtocolType.Tls12
+            
+            # Simple check for updates (re-using app-init logic)
+            url = "https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json"
+            json_str = client.DownloadString(url)
+            data = json.loads(json_str)
+            
+            remote_v = data.get("version", "")
+            dl_url = data.get("download_url", "")
+            
+            local_v = VERSION
+            
+            def v_to_tuple(v): return tuple(map(int, v.split('.')))
+            
+            if v_to_tuple(remote_v) > v_to_tuple(local_v):
+                # Trigger the popup window from hooks (or just show message if needed)
+                # For simplicity here, we'll inform them and let them decide
+                res = forms.alert("A new version (%s) is available!\n\nWould you like to download the update?" % remote_v, 
+                                  title="Update Available", 
+                                  yes=True, no=True)
+                if res:
+                    import webbrowser
+                    webbrowser.open(dl_url)
+                    window.Close()
             else:
-                forms.alert("Failed to update: " + stderr, title="Update Error")
+                forms.alert("You are up to date! (v%s)" % local_v, title="No Updates")
         except Exception as e:
-            forms.alert("Error running update: " + str(e), title="Update Error")
+            forms.alert("Error checking for updates: " + str(e), title="Update Error")
+        finally:
+            update_btn.IsEnabled = True
             
     update_btn.Click += on_update
 
