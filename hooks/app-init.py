@@ -134,18 +134,20 @@ def run_exe_update_checker(extension_dir):
         client = Net.WebClient()
         client.Headers.Add("Cache-Control", "no-cache")
         Net.ServicePointManager.SecurityProtocol |= Net.SecurityProtocolType.Tls12
-        json_str = client.DownloadString("https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json")
+        import time
+        cache_buster = "?v=" + str(int(time.time()))
+        json_str = client.DownloadString("https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json" + cache_buster)
         data = json.loads(json_str)
         
         remote_v = data.get("version", "")
         dl_url = data.get("download_url", "")
         if not remote_v or not dl_url: return
         
-        # FINAL DEBUG: Show comparison for this test (Uncomment if needed)
-        # import clr
-        # clr.AddReference('System.Windows.Forms')
-        # import System.Windows.Forms as Forms
-        # Forms.MessageBox.Show("Local: " + local_v + " | Remote: " + remote_v)
+        # DEBUG: Tell us exactly what's happening
+        import clr
+        clr.AddReference('System.Windows.Forms')
+        import System.Windows.Forms as Forms
+        Forms.MessageBox.Show("Riyan Updater: Checking Versions...\nLocal: " + str(local_v) + "\nRemote: " + str(remote_v))
         
         def v_to_tuple(v): return tuple(map(int, v.split('.')))
         
