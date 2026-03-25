@@ -139,23 +139,23 @@ def show_about_dialog():
 
     def show_branded_message(title, message):
         try:
-            # Escape strings for XML to prevent Xaml parsing errors
-            import cgi
-            safe_title = cgi.escape(str(title))
-            safe_message = cgi.escape(str(message))
+            # Manual XML escaping for robustness
+            safe_title = str(title).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            safe_message = str(message).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "&#x0a;")
             
             msg_xaml = """
             <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    Title="{title}" Width="350" Height="180" 
-                    WindowStartupLocation="CenterScreen" Background="#111111" Topmost="True">
-                <Border BorderBrush="#7B2C2C" BorderThickness="2">
+                    Title="{title}" Width="350" Height="220" 
+                    WindowStartupLocation="CenterScreen"
+                    Background="Black" WindowStyle="ToolWindow" Topmost="True">
+                <Border BorderBrush="#7B2C2C" BorderThickness="3" Margin="5">
                     <StackPanel VerticalAlignment="Center" Margin="20">
-                        <TextBlock Text="{title}" Foreground="#7B2C2C" FontWeight="Bold" FontSize="16" Margin="0,0,0,10" HorizontalAlignment="Center"/>
-                        <TextBlock Text="{message}" Foreground="White" FontSize="14" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
-                        <Button x:Name="OkBtn" Content="OK" Margin="0,20,0,0" Width="80" Height="30" Background="#7B2C2C" Foreground="White" FontWeight="Bold" Cursor="Hand">
+                        <TextBlock Text="{title}" Foreground="#7B2C2C" FontWeight="Bold" FontSize="20" Margin="0,0,0,15" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{message}" Foreground="White" FontSize="15" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+                        <Button x:Name="OkBtn" Content="OK" Margin="0,25,0,0" Width="90" Height="35" Background="#7B2C2C" Foreground="White" FontWeight="Bold" Cursor="Hand">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="15">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="5">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                 </ControlTemplate>
@@ -168,8 +168,7 @@ def show_about_dialog():
             msg_win = XamlReader.Parse(msg_xaml)
             msg_win.FindName("OkBtn").Click += lambda s, e: msg_win.Close()
             msg_win.ShowDialog()
-        except Exception as e:
-            # Fallback to standard alert if custom XAML fails
+        except:
             forms.alert(str(message), title=str(title))
 
     update_btn = window.FindName("UpdateBtn")
@@ -211,7 +210,7 @@ def show_about_dialog():
                     webbrowser.open(dl_url)
                     window.Close()
             else:
-                forms.alert("You are up to date! (v%s)" % VERSION, title="Riyan Tool", warn_icon=False)
+                show_branded_message("Riyan Tool", "You are up to date!\n(v%s)" % VERSION)
                 
         except Exception as e:
             forms.alert("Update Check Failed: " + str(e), title="Error")
