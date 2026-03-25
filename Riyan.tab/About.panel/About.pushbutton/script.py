@@ -24,9 +24,6 @@ def get_version():
 VERSION = get_version()
 
 def show_about_dialog():
-    # Diagnostic alert to confirm reload
-    forms.alert("Diagnostic: Script v1.0.5 Loaded\nOn Disk: v" + VERSION, title="Debug Info")
-    
     plugin_dir = os.path.dirname(__file__)
     # Robust logo path
     curr = os.path.dirname(__file__)
@@ -131,49 +128,68 @@ def show_about_dialog():
     close_btn.Click += on_close
 
     update_btn = window.FindName("UpdateBtn")
+    def show_branded_message(title, message):
+        msg_xaml = """
+        <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                Title="{title}" Width="300" Height="160" 
+                WindowStartupLocation="CenterScreen" WindowStyle="None" 
+                AllowsTransparency="True" Background="Transparent" Topmost="True">
+            <Border Background="#111111" BorderBrush="#7B2C2C" BorderThickness="2" CornerRadius="10">
+                <StackPanel VerticalAlignment="Center" Margin="20">
+                    <TextBlock Text="{title}" Foreground="#7B2C2C" FontWeight="Bold" FontSize="14" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{message}" Foreground="White" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    <Button x:Name="OkBtn" Content="OK" Margin="0,15,0,0" Width="60" Height="25" Background="#7B2C2C" Foreground="White" BorderThickness="0" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="12">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Window>
+        """.replace("{title}", title).replace("{message}", message)
+        msg_win = XamlReader.Parse(msg_xaml)
+        msg_win.FindName("OkBtn").Click += lambda s, e: msg_win.Close()
+        msg_win.ShowDialog()
+
+    update_btn = window.FindName("UpdateBtn")
     def on_update(sender, args):
         try:
-            import json
-            import System.Net as Net
-            
-            # Show "Checking..." status
-            update_btn.IsEnabled = False
-            
             from System.Net import WebClient
             client = WebClient()
             client.Headers.Add("Cache-Control", "no-cache")
+            
             try:
                 from System.Net import ServicePointManager, SecurityProtocolType
                 ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12
             except:
-                pass # Already set or not available in this env
+                pass
             
-            # Simple check for updates (re-using app-init logic)
             url = "https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json"
             json_str = client.DownloadString(url)
+            import json
             data = json.loads(json_str)
             
             remote_v = data.get("version", "")
             dl_url = data.get("download_url", "")
-            
             local_v = VERSION
             
             def v_to_tuple(v): return tuple(map(int, v.split('.')))
             
             if v_to_tuple(remote_v) > v_to_tuple(local_v):
-                # Trigger the popup window from hooks (or just show message if needed)
-                # For simplicity here, we'll inform them and let them decide
-                res = forms.alert("A new version (%s) is available!\n\nWould you like to download the update?" % remote_v, 
-                                  title="Update Available", 
-                                  yes=True, no=True)
+                res = forms.alert("A new version (%s) is available!\n\nWould you like to download it?" % remote_v, 
+                                  title="Update Available", yes=True, no=True)
                 if res:
                     import webbrowser
                     webbrowser.open(dl_url)
                     window.Close()
             else:
-                forms.alert("You are up to date! (v%s)" % local_v, title="No Updates")
+                show_branded_message("Riyan Tool", "You are up to date!\n(v%s)" % local_v)
         except Exception as e:
-            forms.alert("Error checking for updates: " + str(e), title="Update Error")
+            show_branded_message("Update Error", str(e))
         finally:
             update_btn.IsEnabled = True
             
