@@ -153,37 +153,37 @@ def show_about_dialog():
         msg_win.ShowDialog()
 
     update_btn = window.FindName("UpdateBtn")
-    from System import Action
-    from System.Windows.Threading import DispatcherPriority
 
     def on_update(sender, args):
         try:
             update_btn.IsEnabled = False
             update_btn.Content = "Checking..."
-            # Force UI to show "Checking..."
-            window.Dispatcher.Invoke(DispatcherPriority.Background, Action(lambda: None))
-
-            from System.Net import WebClient
-            client = WebClient()
-            client.Headers.Add("Cache-Control", "no-cache")
+            
+            # Use standard alerts for diagnostics
+            from System.Net import WebClient, ServicePointManager, SecurityProtocolType
+            
             try:
-                from System.Net import ServicePointManager, SecurityProtocolType
                 ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12
             except: pass
             
+            client = WebClient()
+            client.Headers.Add("Cache-Control", "no-cache")
+            
             url = "https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json"
-            json_str = client.DownloadString(url)
+            
+            # Step-by-step diagnostic
             import json
+            json_str = client.DownloadString(url)
             data = json.loads(json_str)
+            
             remote_v = data.get("version", "")
             dl_url = data.get("download_url", "")
             
             def v_to_tuple(v): return tuple(map(int, v.split('.')))
+            
             if v_to_tuple(remote_v) > v_to_tuple(VERSION):
-                update_btn.Content = "Check for Updates"
-                update_btn.IsEnabled = True
-                res = forms.alert("A new version (%s) is available!\n\nWould you like to download it?" % remote_v, 
-                                  title="Update Available", yes=True, no=True)
+                res = forms.alert("New version available: %s\nDownload now?" % remote_v, 
+                                  title="Update Found", yes=True, no=True)
                 if res:
                     import webbrowser
                     webbrowser.open(dl_url)
@@ -192,7 +192,7 @@ def show_about_dialog():
                 show_branded_message("Riyan Tool", "You are up to date!\n(v%s)" % VERSION)
                 
         except Exception as e:
-            show_branded_message("Update Error", str(e))
+            forms.alert("Diagnostics Error: " + str(e))
         finally:
             update_btn.Content = "Check for Updates"
             update_btn.IsEnabled = True
